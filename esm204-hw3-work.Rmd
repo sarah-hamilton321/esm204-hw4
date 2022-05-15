@@ -1,0 +1,10 @@
+---
+title: 'ESM 204 HW 3: Social Cost of Carbon'
+author: "Sarah Hamilton"
+date: "5/15/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
