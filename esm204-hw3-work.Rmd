@@ -152,14 +152,15 @@ When using the Ramsey Rule, the discount rate we should use to calculate the SCC
 
 ```{r}
 discount_rate_policy <- 0.02
+#assume society is risk neutral
 
+#Policy A
 warming_damages_policy_a <- warming_damages %>%
   select(year, warming_baseline, damages_baseline) %>%
   mutate(damages_2 = damages_quad_function(1.5*warming_baseline)) %>%
   mutate(pv_baseline = damages_baseline*(1+discount_rate_policy)^(-(year-baseline_year))) %>%
   mutate(pv_2 = damages_2*(1+discount_rate_policy)^(-(year-baseline_year)))
 
-#Policy A
 p_a_1 <- 0.5
 p_a_2 <- 0.5
 ev_a_1 <- sum(warming_damages_policy_a$pv_baseline)
@@ -167,15 +168,40 @@ ev_a_2 <- sum(warming_damages_policy_a$pv_2)
 
 ev_a <- p_a_1*ev_a_1+p_a_2*ev_a_2 #expected present value of damages up to 2100 policy A in dollars
 
+#Policy B
+warming_damages_policy_b <- warming_damages %>%
+  select(year, warming_baseline) 
+
+for (i in 30:79){
+  warming_damages_policy_b$warming_baseline[i]=1.29
+}
+
+warming_damages_policy_b <- warming_damages_policy_b %>%
+  mutate(damages_b = damages_quad_function(warming_baseline)) %>%
+  mutate(pv_b = damages_b*(1+discount_rate_policy)^(-(year-baseline_year)))
+
+p_b <- 1.0
+ev_b <- sum(warming_damages_policy_b$pv_b)*p_b #expected present value of damages up to 2100 policy B in dollars
+
+```
+
+Policy A: Business as Usual
+
+The expected present value of damages up to 2100 of policy A is `r round(ev_a,0)` dollars.
+
+Policy B: Take Immediate Action on Climate Change
+
+The expected present value of damages up to 2100 of policy B is `r round(ev_b,0)` dollars.
+
+```{r}
+policy_a_cost <- function(x){ev_a}
+policy_b_cost <- function(x){eb_b+x}
+
+
 ```
 
 
-Now suppose there are two possible climate policies that can be pursued. Policy A is business as usual and Policy B is to take immediate and strong action on climate change. Use these facts
-• If you undertake Policy A there are two possible outcomes. Either warming will occur as in the “baseline” (i.e. “no-pulse”) dataset above (this happens with probability 0.5) or warming each year will be 1.5 times that in the “baseline” dataset (with probability 0.5).
-• Under Policy B, warming will continue until 2050 as in the “baseline” dataset, and then will stabilize at 1.29 degrees and stay that way forever.
-• Society is risk neutral
-• Use a discount rate of 2%
-What is the expected present value of damages up to 2100 under Policy A? What is the expected present value of damages up to 2100 under Policy B? Suppose undertaking Policy A costs zero and undertaking Policy B costs X. The total cost of a policy is the implementation cost plus expected damages. Make a plot of total cost of Policy A and total cost of Policy B against X. Suppose Congress wants to undertake the policy with the lower total cost. Use your graph to advise Congress.
+DELETE: Suppose undertaking Policy A costs zero and undertaking Policy B costs X. The total cost of a policy is the implementation cost plus expected damages. Make a plot of total cost of Policy A and total cost of Policy B against X. Suppose Congress wants to undertake the policy with the lower total cost. Use your graph to advise Congress.
 
 
 
