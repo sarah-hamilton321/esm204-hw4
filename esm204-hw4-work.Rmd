@@ -29,7 +29,7 @@ damages <- read_csv(here("damages.csv")) #units of degrees C, dollars
 warming <- read_csv(here("warming.csv")) %>% select(year:warming_pulse) #units of year, degrees C
 ```
 
-# Question 1: Estimate damages as a function of the change in global temperature
+# Estimate damages as a function of the change in global temperature
 
 ```{r}
 pulse <- 35000000000
@@ -41,7 +41,7 @@ damages$warming2 <- damages$warming^2
 damages_quad_model <- lm(damages ~ warming + warming2, data = damages)
 
 #output the model results
-summary(damages_quad_model)
+#summary(damages_quad_model)
 
 #make a function out of the model results 
 damages_quad_function <- function(x){
@@ -58,7 +58,7 @@ ggplot(data = damages, aes(x = warming, y = damages)) +
 
 Figure 1. The above plot shows the damages that result from given amounts of warming. 
 
-# Question 2: Estimated damages under different scenarios
+# Estimated damages under different scenarios
 
 ```{r}
 warming_damages <- warming %>%
@@ -93,7 +93,7 @@ plot_damages_difference_co2 <- ggplot(data = warming_damages, aes(x = year, y = 
 
 Figure 2. The above plots represent the damages caused by CO2 emissions each year under two scenarios. The top left shows the damages that result each year under the baseline scenario of warming. The top right shows the damages that result each year under the pulse scenario of warming. The bottom left shows the difference in damages between the two scenarios. The bottom right shows the difference in damages that results between the two scenarios per ton of additional CO2 emitted from the pulse. 
 
-# Question 3: Social cost of carbon
+# Social cost of carbon
 
 ```{r}
 baseline_year <- 2022
@@ -139,7 +139,7 @@ ggplot(data = scc_df, aes(x = disc_rates, y = scc_calc)) +
 
 Figure 3. The above plot shows the social cost of carbon in dollars per ton of CO2 emitted for discount rates ranging from 1% to 10%. As discount rate increases, the social cost of carbon decreases. This is expected because a higher discount rate indicates that we value our money more today, or in other words, that we value our money in the future less. This results on us placing a lower value on the social cost of carbon because the future effects are less of a concern. 
 
-# Question 4: Ramsey Rule for SCC
+# Ramsey Rule for SCC
 
 ```{r}
 #Use the ramsey rule to calculate the discount rate for SCC
@@ -148,7 +148,7 @@ discount_rate_ramsey <- (0.001+2*0.01)*100
 
 When using the Ramsey Rule, the discount rate we should use to calculate the SCC would be `r discount_rate_ramsey`%. This point is marked on the plot above where the blue vertical line intercepts the curve.
 
-# Question 5: Policy Analysis
+# Policy Analysis
 
 ```{r}
 discount_rate_policy <- 0.02
@@ -195,13 +195,43 @@ The expected present value of damages up to 2100 of policy B is `r round(ev_b,0)
 
 ```{r}
 policy_a_cost <- function(x){ev_a}
-policy_b_cost <- function(x){eb_b+x}
+policy_b_cost <- function(x){ev_b+x}
 
+costs <- c(0,1e15,2e15,3e15,4e15,5e15,6e15,7e15,8e15,9e15,10e15)
+total_cost_a <- c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA)
+total_cost_b <- c(NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA)
+
+cost_df <- data.frame(costs,total_cost_a,total_cost_b)
+
+cost_df <- cost_df %>%
+  mutate(total_cost_a = policy_a_cost(costs)) %>%
+  mutate(total_cost_b = policy_b_cost(costs))
+
+costs_df_long <- cost_df %>%
+  pivot_longer(cols = c(total_cost_a,total_cost_b), names_to = 'policy', values_to = 'total_cost') %>%
+  mutate(policy = case_when(
+    policy == "total_cost_a" ~ "Policy A",
+    policy == "total_cost_b" ~ "Policy B"
+  ))
+
+ggplot(data = costs_df_long, aes(x = costs, y = total_cost)) +
+  geom_line(aes(color = policy)) +
+  theme_minimal() +
+  labs(x = "Initial Cost of Policy B ($)", y = "Expected Value of Policy ($)",
+       title = "Expected Value of Policy versus Cost of Implementing Policy B")
+
+#find point where policy a cost = policy b cost using uniroot()
+
+dif_costs_fun <- function(x){ev_a-(ev_b+x)}
+equal_cost <- uniroot(dif_costs_fun, c(1e15,2.5e15))$root
 
 ```
 
+Figure 4. The above plot shows the expected value of policies A and B as a function of the initial cost of implementing Policy B (Policy A has no initial costs). 
 
-DELETE: Suppose undertaking Policy A costs zero and undertaking Policy B costs X. The total cost of a policy is the implementation cost plus expected damages. Make a plot of total cost of Policy A and total cost of Policy B against X. Suppose Congress wants to undertake the policy with the lower total cost. Use your graph to advise Congress.
+The two policies have the same total expected value when the initial cost of Policy B is `r round(equal_cost,0)` dollars. Therefore, if Policy B costs less than this amount, Congress should undertake Policy B, and if Policy B costs more than this amount, Congress should undertake Policy A (assuming that cost is their only consideration).
 
+# Risk Averse Society
 
+If society is risk averse, they are less likely to want to take the risk that Policy A results in the lower cost scenario, or in other words, they are more likely to prefer Policy B because it has guaranteed lower future damages. Therefore, if we determined that society is risk averse, I would advise Congress to model society's utility function from given monetary costs, then plug in the estimated costs of policies A and B into the utility function, and then recalculate the expected costs (or damages) of each policy using these new expected utility values. After this, they should determine the cost of Policy B, add it to the expected costs (or damages) of Policy B and then determine which policy has the lowest expected costs (or damages) and choose that policy. 
 
