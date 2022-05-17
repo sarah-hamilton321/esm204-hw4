@@ -127,7 +127,10 @@ ggplot(data = scc_df, aes(x = disc_rates, y = scc_calc)) +
   geom_point(color = "black") +
   theme_minimal() +
   labs(x = "Discount Rate (%)", y = "Social Cost of Carbon ($/ton of CO2)") +
-  geom_vline(xintercept=2.1, color = 'light blue')
+  geom_vline(xintercept=2.1, color = 'light blue') +
+  geom_label(aes(x=2.1, label="Ramsey Rule: SCC = $69", y=90), colour="light blue", angle=90) +
+  geom_point(aes(x = 2.1, y = 69), color = "light blue", size = 2.5)
+
 
 # scc_function <- function(discount_rate){
 #   warming_damages_scc %>%
@@ -144,9 +147,15 @@ Figure 3. The above plot shows the social cost of carbon in dollars per ton of C
 ```{r}
 #Use the ramsey rule to calculate the discount rate for SCC
 discount_rate_ramsey <- (0.001+2*0.01)*100
+
+warming_damages_ramsey <- warming_damages %>%
+  select(year, damages_difference_co2) %>%
+  mutate(pv_ramsey = damages_difference_co2*((1+(discount_rate_ramsey/100))^(-(year-baseline_year))))
+
+scc_ramsey <- sum(warming_damages_ramsey$pv_ramsey)
 ```
 
-When using the Ramsey Rule, the discount rate we should use to calculate the SCC would be `r discount_rate_ramsey`%. This point is marked on the plot above where the blue vertical line intercepts the curve.
+When using the Ramsey Rule, the discount rate we should use to calculate the SCC would be `r discount_rate_ramsey`%, and the resulting SCC would be `r round(scc_ramsey, 2)` dollars. This point is marked on the plot above where the blue vertical line intercepts the curve.
 
 # Policy Analysis
 
