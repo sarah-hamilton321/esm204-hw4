@@ -38,14 +38,14 @@ pulse <- 35000000000
 damages$warming2 <- damages$warming^2
 
 #run a linear regression using the new warming^2 and the original warming 
-damages_quad_model <- lm(damages ~ warming + warming2, data = damages)
+damages_quad_model <- lm(damages ~ 0 + warming + warming2, data = damages)
 
 #output the model results
 #summary(damages_quad_model)
 
 #make a function out of the model results 
 damages_quad_function <- function(x){
-  damages_quad_model$coefficients[1]+damages_quad_model$coefficients[2]*x+damages_quad_model$coefficients[3]*x^2
+  damages_quad_model$coefficients[1]*x+damages_quad_model$coefficients[2]*x^2
 }
 
 #plot the raw data and the model 
@@ -242,5 +242,5 @@ The two policies have the same total expected value when the initial cost of Pol
 
 # Risk Averse Society
 
-If society is risk averse, they are less likely to want to take the risk that Policy A results in the lower cost scenario, or in other words, they are more likely to prefer Policy B because it has guaranteed lower future damages. Therefore, if we determined that society is risk averse, I would advise Congress to model society's utility function from given monetary costs, then plug in the estimated costs of policies A and B into the utility function, and then recalculate the expected costs (or damages) of each policy using these new expected utility values. After this, they should determine the cost of Policy B, add it to the expected costs (or damages) of Policy B and then determine which policy has the lowest expected costs (or damages) and choose that policy. 
+If society is risk averse, they are less likely to want to take the risk that Policy A results in the lower cost scenario, or in other words, they are more likely to prefer Policy B because it has guaranteed lower future damages than the high cost outcome from Policy A. Therefore, if we determined that society is risk averse, I would advise Congress to model society's utility function from given monetary costs, then plug in the estimated costs of policies A and B into the utility function, and then recalculate the expected costs (or damages) of each policy using these new expected utility values. After this, they should determine the cost of Policy B, add it to the expected costs (or damages) of Policy B and then determine which policy has the lowest expected costs (or damages) and choose that policy. 
 
